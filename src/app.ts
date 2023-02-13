@@ -19,6 +19,8 @@ import {
   getProjects,
   getProjectById,
   createProjectTech,
+  updateProject,
+  deleteProject,
 } from './logics/projects.logics';
 
 const app: Application = express();
@@ -36,15 +38,13 @@ app.get('/developers', getDevelopers);
 app.patch('/developers/:id', verifyDeveloperExists, updateDeveloper);
 app.delete('/developers/:id', verifyDeveloperExists, deleteDeveloper);
 app.post('/developers/:id/infos', verifyDeveloperExists, createDeveloperInfo);
-app.patch(
-  '/developers/:id/infos',
-  verifyDeveloperInfoExists,
-  updateDeveloperInfo
-);
+app.patch('/developers/:id/infos', updateDeveloperInfo);
 ///////////// projects ////////////////
 app.post('/projects', createProject);
 app.get('/projects', getProjects);
 app.get('/projects/:id', getProjectById);
+app.patch('/projects/:id', updateProject);
+app.delete('/projects/:id', deleteProject);
 app.post('/projects/:id/technologies', createProjectTech);
 
 app.listen(3000, async () => {

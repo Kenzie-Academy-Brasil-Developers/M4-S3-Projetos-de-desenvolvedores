@@ -51,7 +51,7 @@ CREATE TABLE projects_technologies (
 	"id" BIGSERIAL PRIMARY KEY,
 	"addedIn" DATE NOT NULL,
 	"projectId" INTEGER NOT NULL,
-	"technologyId" INTEGER NOT NULL,
+	"technologyId" INTEGER NOT NULL DEFAULT 0,
 	FOREIGN KEY ("projectId") REFERENCES projects("id") ON DELETE CASCADE,
-	FOREIGN KEY ("technologyId") REFERENCES technologies("id") ON DELETE CASCADE
+	FOREIGN KEY ("technologyId") REFERENCES technologies("id") ON DELETE DEFAULT
 );

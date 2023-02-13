@@ -44,10 +44,15 @@ export const getProjects = async (
     const queryString: string = `
       
         SELECT
-          * 
+          p.*,
+          pt."technologyId",
+          t."name" AS "technologyName"
         FROM 
-          projects;
-      
+          projects p
+        LEFT JOIN
+        projects_technologies pt ON pt."projectId" = p."id"
+        LEFT JOIN
+        technologies t ON t."id" = pt."technologyId"
       `;
 
     const queryResult: ProjectResult = await client.query(queryString);
@@ -133,4 +138,86 @@ export const createProjectTech = async (
       message: 'Internal Server Error',
     });
   }
+};
+
+export const updateProject = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const projectId: number = parseInt(req.params.id);
+    const developerData = Object.values(req.body);
+    const developerKeys = Object.keys(req.body);
+
+    const queryString: string = format(
+      `
+    UPDATE
+      projects
+    SET (%I) = ROW (%L)
+    WHERE
+    id = $1
+    RETURNING *;
+    `,
+      developerKeys,
+      developerData
+    );
+
+    const queryConfig: QueryConfig = {
+      text: queryString,
+      values: [projectId],
+    };
+
+    const queryResult = await client.query(queryConfig);
+
+    return res.status(200).json(queryResult.rows[0]);
+  } catch (error: any) {
+    return res.status(500).json({
+      message: 'Internal server error',
+    });
+  }
+};
+
+export const deleteProject = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const projectId: number = parseInt(req.params.id);
+
+  const queryString: string = `
+  DELETE FROM
+    projects 
+  WHERE 
+    id = $1;  
+  `;
+
+  const queryConfig: QueryConfig = {
+    text: queryString,
+    values: [projectId],
+  };
+
+  await client.query(queryConfig);
+  return res.status(204).json();
+};
+
+export const deleteProjectTech = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const projectId: number = parseInt(req.params.id);
+  const techName: string = req.params.name;
+
+  const queryString: string = `
+  DELETE FROM
+    projects 
+  WHERE 
+    id = $1;  
+  `;
+
+  const queryConfig: QueryConfig = {
+    text: queryString,
+    values: [projectId],
+  };
+
+  await client.query(queryConfig);
+  return res.status(204).json();
 };

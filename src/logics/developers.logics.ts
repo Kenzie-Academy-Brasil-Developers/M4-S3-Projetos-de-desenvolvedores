@@ -316,7 +316,25 @@ export const updateDeveloperInfo = async (
     const developerData = Object.values(req.body);
     const developerKeys = Object.keys(req.body);
 
-    const queryString: string = format(
+    let queryString: string = `
+    
+      SELECT
+      *
+      FROM
+      developers
+      WHERE
+      id = $1
+    `;
+
+    let queryConfig: QueryConfig = {
+      text: queryString,
+      values: [developerId],
+    };
+
+    const queryResult = await client.query(queryConfig);
+    console.log(queryResult.rows[0]);
+
+    queryString = format(
       `
     UPDATE
       developer_infos
@@ -329,14 +347,14 @@ export const updateDeveloperInfo = async (
       developerData
     );
 
-    const queryConfig: QueryConfig = {
+    queryConfig = {
       text: queryString,
-      values: [developerId],
+      values: [queryResult.rows[0].developerInfoId],
     };
 
-    const queryResult: DeveloperModifyResult = await client.query(queryConfig);
+    const result: DeveloperModifyResult = await client.query(queryConfig);
 
-    return res.status(201).json(queryResult.rows[0]);
+    return res.status(201).json(result.rows[0]);
   } catch (error: any) {
     return res.status(500).json({
       message: 'Internal server error',
