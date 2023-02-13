@@ -2,7 +2,9 @@ import { Request, Response } from 'express';
 import format from 'pg-format';
 import {
   IProjectRequest,
+  IProjectTechRequest,
   ProjectResult,
+  ProjectTechResult,
 } from '../interfaces/projects.interfaces';
 
 import { client } from '../database';
@@ -79,4 +81,56 @@ export const getProjectById = async (
   const queryResult: ProjectResult = await client.query(queryConfig);
 
   return res.status(200).json(queryResult.rows[0]);
+};
+
+export const createProjectTech = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const projectId: number = parseInt(req.params.id);
+    const techName: string = req.body.name;
+
+    let queryString: string = `
+    SELECT
+    *
+    FROM
+    technologies
+    WHERE
+    name = $1
+    `;
+
+    let queryConfig: QueryConfig = {
+      text: queryString,
+      values: [techName],
+    };
+
+    let queryResult = await client.query(queryConfig);
+
+    const projectTechData: IProjectTechRequest = {
+      addedIn: new Date(),
+      projectId: projectId,
+      technologyId: queryResult.rows[0].id,
+    };
+
+    queryString = format(
+      `
+        INSERT INTO
+          projects_technologies (%I)
+        VALUES (%L)
+        RETURNING *;
+        `,
+      Object.keys(projectTechData),
+      Object.values(projectTechData)
+    );
+
+    let result: ProjectTechResult = await client.query(queryString);
+
+    return res.status(201).json(result.rows[0]);
+  } catch (error: any) {
+    console.log(error.message);
+    return res.status(500).json({
+      message: 'Internal Server Error',
+    });
+  }
 };

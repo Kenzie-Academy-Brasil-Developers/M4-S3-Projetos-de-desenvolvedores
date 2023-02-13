@@ -14,4 +14,15 @@ export interface IProject extends IProjectRequest {
   id: number;
 }
 
+export interface IProjectTechRequest {
+  addedIn: Date;
+  projectId: Number;
+  technologyId: Number;
+}
+
+export interface IProjectTech extends IProjectTechRequest {
+  id: Number;
+}
+
 export type ProjectResult = QueryResult<IProject>;
+export type ProjectTechResult = QueryResult<IProjectTech>;

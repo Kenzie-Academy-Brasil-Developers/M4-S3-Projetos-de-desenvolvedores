@@ -18,6 +18,7 @@ import {
   createProject,
   getProjects,
   getProjectById,
+  createProjectTech,
 } from './logics/projects.logics';
 
 const app: Application = express();
@@ -44,6 +45,7 @@ app.patch(
 app.post('/projects', createProject);
 app.get('/projects', getProjects);
 app.get('/projects/:id', getProjectById);
+app.post('/projects/:id/technologies', createProjectTech);
 
 app.listen(3000, async () => {
   console.log('Server is running');

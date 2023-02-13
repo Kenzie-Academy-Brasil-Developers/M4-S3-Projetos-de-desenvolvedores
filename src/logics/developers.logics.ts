@@ -49,7 +49,7 @@ export const getDevelopers = async (
     FROM
     developers dev
     LEFT JOIN
-      developer_infos di ON dev."developerInfoId" = di.id
+      developer_infos di ON dev."developerInfoId" = di.id;
     `;
 
     const queryResult: DeveloperResult = await client.query(queryString);
@@ -152,13 +152,19 @@ export const getDeveloperProjects = async (
       p."estimatedTime" AS "projectEstimatedTime",
       p."repository" AS "projectRepository",
       p."startDate" AS "projectStartDate",
-      p."endDate" AS "projectEndDate"
+      p."endDate" AS "projectEndDate",
+      pt."technologyId",
+      t.name AS "technologyName"
     FROM
       developers dev
     LEFT JOIN
       developer_infos di ON dev."developerInfoId" = di.id
     LEFT JOIN 
       projects p ON p."developerId" = dev.id
+    LEFT JOIN
+    projects_technologies pt ON p."id" = pt."projectId"
+    LEFT JOIN
+    technologies t ON t.id = pt."technologyId"
     WHERE
       dev.id = $1;
       `;
