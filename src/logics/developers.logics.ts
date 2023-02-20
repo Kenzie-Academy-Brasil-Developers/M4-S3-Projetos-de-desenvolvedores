@@ -65,7 +65,8 @@ export const createDeveloper = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const developerData: IDeveloperRequest = validateDeveloper(req.body);
+    let developerData: IDeveloperRequest = validateDeveloper(req.body);
+    developerData = { email: req.body.email, name: req.body.name };
     const queryString: string = format(
       `
         INSERT INTO
@@ -214,8 +215,60 @@ export const createDeveloperInfo = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const developerInfoData: IDeveloperInfosRequest = req.body;
+    let developerInfoData = {
+      developerSince: req.body.developerSince,
+      preferredOS: req.body.preferredOS,
+    };
+
+    if (
+      developerInfoData.developerSince === undefined ||
+      developerInfoData.preferredOS === undefined
+    ) {
+      return res.status(400).json({
+        message: 'Missing required keys: developerSince,preferredOS.',
+      });
+    }
+
+    if (
+      developerInfoData.preferredOS != 'Windows' &&
+      developerInfoData.preferredOS != 'Linux' &&
+      developerInfoData.preferredOS != 'MacOS'
+    ) {
+      return res.status(400).json({
+        message: 'Invalid OS option.',
+        options: ['Windows', 'Linux', 'MacOS'],
+      });
+    }
     const developerId: string = req.params.id;
+
+    const string: string = `
+  SELECT
+  dev.id AS "developerID",
+  dev.name AS "developerName",
+  dev.email AS "developerEmail",
+  di.id AS "developerInfoID",
+  di."developerSince" AS "developerInfoDeveloperSince",
+  di."preferredOS" AS "developerInfoPreferredOS"
+ FROM
+ developers dev
+ LEFT JOIN
+   developer_infos di ON dev."developerInfoId" = di.id
+  WHERE
+    dev.id = $1;
+  `;
+
+    const config: QueryConfig = {
+      text: string,
+      values: [developerId],
+    };
+
+    const result: DeveloperResult = await client.query(config);
+
+    if (result.rows[0].developerID != null) {
+      return res.status(400).json({
+        message: 'Developer infos already exists.',
+      });
+    }
 
     let queryString: string = format(
       `
@@ -261,9 +314,33 @@ export const updateDeveloper = async (
   res: Response
 ): Promise<Response> => {
   try {
+    const data: IDeveloperRequest = {
+      name: '',
+      email: '',
+    };
+
+    if (req.body.name) {
+      data.name = req.body.name;
+    }
+    if (req.body.email) {
+      data.email = req.body.email;
+    }
+
+    if (data.name === '') {
+      delete data.name;
+    }
+    if (data.email === '') {
+      delete data.email;
+    }
+    if (Object.keys(data).length < 1) {
+      return res.status(400).json({
+        message: 'At least one of those keys must be send.',
+        keys: ['name', 'email'],
+      });
+    }
     const developerId: number = parseInt(req.params.id);
-    const developerData = Object.values(req.body);
-    const developerKeys = Object.keys(req.body);
+    const developerData = Object.values(data);
+    const developerKeys = Object.keys(data);
 
     const queryString: string = format(
       `
@@ -312,9 +389,44 @@ export const updateDeveloperInfo = async (
   res: Response
 ): Promise<Response> => {
   try {
+    const data: IDeveloperInfosRequest = {
+      developerSince: '',
+      preferredOS: '',
+    };
+    if (req.body.developerSince) {
+      data.developerSince = req.body.developerSince;
+    }
+    if (req.body.preferredOS) {
+      data.preferredOS = req.body.preferredOS;
+    }
+
+    if (data.developerSince === '') {
+      delete data.developerSince;
+    }
+    if (data.preferredOS === '') {
+      delete data.preferredOS;
+    }
+    if (Object.keys(data).length < 1) {
+      return res.status(400).json({
+        message: 'At least one of those keys must be send.',
+        keys: ['developerSince', 'preferredOS'],
+      });
+    }
+
+    if (
+      data.preferredOS &&
+      data.preferredOS != 'Windows' &&
+      data.preferredOS != 'Linux' &&
+      data.preferredOS != 'MacOS'
+    ) {
+      return res.status(400).json({
+        message: 'Invalid OS option.',
+        options: ['Windows', 'Linux', 'MacOS'],
+      });
+    }
     const developerId: number = parseInt(req.params.id);
-    const developerData = Object.values(req.body);
-    const developerKeys = Object.keys(req.body);
+    const developerData = Object.values(data);
+    const developerKeys = Object.keys(data);
 
     let queryString: string = `
     
@@ -332,7 +444,6 @@ export const updateDeveloperInfo = async (
     };
 
     const queryResult = await client.query(queryConfig);
-    console.log(queryResult.rows[0]);
 
     queryString = format(
       `
@@ -356,6 +467,9 @@ export const updateDeveloperInfo = async (
 
     return res.status(201).json(result.rows[0]);
   } catch (error: any) {
+    if (error instanceof Error) {
+      res.status(400).json(error.message);
+    }
     return res.status(500).json({
       message: 'Internal server error',
     });

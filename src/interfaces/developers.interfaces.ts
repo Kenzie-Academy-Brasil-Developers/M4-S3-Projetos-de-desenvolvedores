@@ -1,8 +1,8 @@
 import { QueryResult } from 'pg';
 
 export interface IDeveloperRequest {
-  developerName: string;
-  developerEmail: string;
+  name?: string;
+  email?: string;
 }
 
 export interface IDeveloperModify {
@@ -30,8 +30,8 @@ export interface IDeveloperFullInfo extends IDeveloper {
 }
 
 export interface IDeveloperInfosRequest {
-  developerSince: string;
-  preferredOs: string;
+  developerSince?: string;
+  preferredOS?: string;
 }
 
 export interface IDeveloperInfos extends IDeveloperInfosRequest {

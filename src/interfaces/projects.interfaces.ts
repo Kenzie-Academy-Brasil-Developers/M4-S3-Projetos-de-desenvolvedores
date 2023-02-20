@@ -1,13 +1,13 @@
 import { QueryResult } from 'pg';
 
 export interface IProjectRequest {
-  name: string;
-  description: string;
-  estimatedTime: string;
-  repository: string;
-  startDate: Date;
+  name?: string;
+  description?: string;
+  estimatedTime?: string;
+  repository?: string;
+  startDate?: Date;
   endDate?: Date;
-  developerId: number;
+  developerId?: number;
 }
 
 export interface IProject extends IProjectRequest {
@@ -23,6 +23,14 @@ export interface IProjectTechRequest {
 export interface IProjectTech extends IProjectTechRequest {
   id: Number;
 }
+
+export type ProjectRequiredKeys =
+  | 'name'
+  | 'description'
+  | 'estimatedTime'
+  | 'repository'
+  | 'startDate'
+  | 'developerId';
 
 export type ProjectResult = QueryResult<IProject>;
 export type ProjectTechResult = QueryResult<IProjectTech>;
