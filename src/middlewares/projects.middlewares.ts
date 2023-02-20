@@ -32,3 +32,34 @@ export const verifyProjectExists = async (
     message: 'Project doesn`t exist',
   });
 };
+
+export const verifytechExist = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+): Promise<Response | void> => {
+  const techName: string = request.params.techname;
+
+  const queryString: string = `
+    SELECT
+    COUNT(*)
+    FROM
+      technologies
+    WHERE
+      name = $1;`;
+
+  const queryConfig: QueryConfig = {
+    text: queryString,
+    values: [techName],
+  };
+
+  const queryResult = await client.query(queryConfig);
+
+  if (Number(queryResult.rows[0].count) > 0) {
+    return next();
+  }
+
+  return response.status(404).json({
+    message: 'Technology does not exist',
+  });
+};

@@ -21,9 +21,13 @@ import {
   createProjectTech,
   updateProject,
   deleteProject,
+  deleteProjectTech,
 } from './logics/projects.logics';
 
-import { verifyProjectExists } from './middlewares/projects.middlewares';
+import {
+  verifyProjectExists,
+  verifytechExist,
+} from './middlewares/projects.middlewares';
 
 const app: Application = express();
 app.use(express.json());
@@ -48,6 +52,12 @@ app.get('/projects/:id', verifyProjectExists, getProjectById);
 app.patch('/projects/:id', verifyProjectExists, updateProject);
 app.delete('/projects/:id', verifyProjectExists, deleteProject);
 app.post('/projects/:id/technologies', verifyProjectExists, createProjectTech);
+app.delete(
+  '/projects/:id/technologies/:techname',
+  verifytechExist,
+  verifyProjectExists,
+  deleteProjectTech
+);
 
 app.listen(3000, async () => {
   console.log('Server is running');

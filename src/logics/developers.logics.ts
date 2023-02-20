@@ -264,7 +264,7 @@ export const createDeveloperInfo = async (
 
     const result: DeveloperResult = await client.query(config);
 
-    if (result.rows[0].developerID != null) {
+    if (result.rows[0].developerInfoID != null) {
       return res.status(400).json({
         message: 'Developer infos already exists.',
       });

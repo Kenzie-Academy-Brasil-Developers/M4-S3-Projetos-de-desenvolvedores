@@ -361,20 +361,36 @@ export const deleteProjectTech = async (
   res: Response
 ): Promise<Response> => {
   const projectId: number = parseInt(req.params.id);
-  const techName: string = req.params.name;
+  const techName: string = req.params.techname;
 
   const queryString: string = `
-  DELETE FROM
-    projects 
-  WHERE 
-    id = $1;  
+  SELECT
+  *
+  FROM
+  technologies
+  WHERE
+  name = $1
   `;
 
   const queryConfig: QueryConfig = {
     text: queryString,
+    values: [techName],
+  };
+
+  const string: string = `
+  DELETE 
+  technologyId
+  FROM
+    projects_tecnologies
+  WHERE
+    projectId = $1;
+  `;
+
+  const config: QueryConfig = {
+    text: queryString,
     values: [projectId],
   };
 
-  await client.query(queryConfig);
+  await client.query(config);
   return res.status(204).json();
 };
